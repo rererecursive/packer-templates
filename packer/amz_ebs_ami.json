@@ -1,11 +1,21 @@
 {
   "builders": [{
     "type": "amazon-ebs",
+    "name": "{{ user `client`}}-{{ user `role` }}-{{ isotime \"2006-12-31\" }}",
     "region": "{{ user `region` }}",
     "source_ami": "{{ user `source_ami` }}",
+    "source_ami_filter": {
+      "filters": {
+        "virtualization-type": "hvm",
+        "name": "{{ user `source_ami_name` }}",
+        "root-device-type": "ebs"
+      },
+      "owners": ["{{ user `source_ami_owner` }}"],
+      "most_recent": true
+    },
     "instance_type": "{{ user `instance_type` }}",
     "iam_instance_profile":"{{ user `packer_instance_profile`}}",
-    "ami_name": "{{ user `client`}}-{{ user `ami_name` }}-{{ user `build_no` }}",
+    "ami_name": "{{ build_name }}",
     "ami_regions": "{{ user `ami_regions`}}",
     "ami_users": "{{ user `ami_users`}}",
     "access_key": "{{ user `access_key` }}",
@@ -17,11 +27,23 @@
     "security_group_id": "{{ user `security_group` }}",
     "ssh_timeout":"{{ user `ssh_timeout`}}",
     "run_tags": {
-      "Name": "Packer {{ user `ami_name` }} (Amazon Linux)"
+      "Name": "Packer {{ user `ami_name` }} (Amazon Linux)",
+      "SourceAMI": "{{ .SourceAMI  }}",
+      "SourceAMIName": "{{ .SourceAMIName  }}",
+      "BuildNumber": "{{ user `build_no`}}",
+      "ChefRepoCommit": "{{ user `chef_repo_commit`  }}",
+      "ChefRepoBranch": "{{ user `chef_repo_branch` }}",
+      "PackerTemplateName": "{{ user `packer_template` }}",
+      "Status": "Baking"
     },
     "tags": {
       "Name": "{{ user `ami_name` }}",
-      "BuildId": "{{ user `build_id`}}",
+      "SourceAMI": "{{ .SourceAMI  }}",
+      "SourceAMIName": "{{ .SourceAMIName  }}",
+      "BuildNumber": "{{ user `build_no`}}",
+      "ChefRepoCommit": "{{ user `chef_repo_commit`  }}",
+      "ChefRepoBranch": "{{ user `chef_repo_branch` }}",
+      "PackerTemplateName": "{{ user `packer_template` }}",
       "Status": "Baked"
     },
     "ami_block_device_mappings": [ {
@@ -90,28 +112,46 @@
       }
     }
   ],
+  "post-processors": [
+    {
+      "type": "manifest",
+      "output": "artifacts.json",
+      "strip_path": true
+    },
+    {
+      "type": "shell-local",
+      "inline": [
+        "jq -r '.builds[] | (.artifact_id + \" \" + .name)' artifacts.json | sed 's/:/: /' | sed 's/ /\n  /g' > builds.json"
+      ]
+    }
+  ],
   "variables": {
     "access_key": "",
-    "secret_key": "",
-    "source_ami": "",
-    "ami_name":"",
-    "vpc_id": "",
-    "subnet_id": "" ,
-    "security_group": "" ,
-    "region": "",
-    "build_no": "",
-    "build_id": "",
-    "build_sha": "",
-    "chef_run_list":"",
-    "chef_version":"latest",
     "ami_regions":"",
     "ami_users":"",
-    "packer_role":"packer",
-    "packer_instance_profile":"packer",
-    "instance_type":"m3.medium",
+    "client": "",
     "bake_volume_size":"8",
-    "ssh_timeout":"5m",
+    "build_no": "",
+    "build_sha": "",
+    "chef_repo_branch": "",
+    "chef_repo_commit": "",
+    "chef_run_list":"",
+    "chef_version":"latest",
     "device_name":"/dev/xvda",
-    "ssh_username":"ec2-user"
+    "instance_type": "m4.large",
+    "packer_instance_profile":"packer",
+    "packer_role":"packer",
+    "packer_template": "",
+    "region": "",
+    "role": "",
+    "secret_key": "",
+    "security_group": "",
+    "source_ami": "",
+    "source_ami_owner": "",
+    "source_ami_name": "",
+    "ssh_timeout":"5m",
+    "ssh_username":"ec2-user",
+    "subnet_id": "" ,
+    "vpc_id": ""
   }
 }
