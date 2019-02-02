@@ -1,0 +1,98 @@
+{
+  "builders": [{
+    "type": "amazon-ebs",
+    "region": "{{ user `region` }}",
+    "source_ami": "{{ user `source_ami` }}",
+    "instance_type": "{{ user `instance_type` }}",
+    "iam_instance_profile":"{{ user `packer_instance_profile`}}",
+    "ami_name": "{{ user `client`}}-{{ user `ami_name` }}-{{ user `build_no` }}",
+    "ami_regions": "{{ user `ami_regions`}}",
+    "ami_users": "{{ user `ami_users`}}",
+    "access_key": "{{ user `access_key` }}",
+    "secret_key": "{{ user `secret_key` }}",
+    "vpc_id":	"{{ user `vpc_id` }}",
+    "subnet_id": "{{ user `subnet_id` }}",
+    "ssh_username": "ubuntu",
+    "ssh_pty": true,
+    "security_group_id": "{{ user `security_group` }}",
+    "run_tags": {
+      "Name": "Packer {{ user `ami_name` }} (Ubuntu Linux)"
+    },
+    "tags": {
+      "Name": "{{ user `ami_name` }}",
+      "BuildId": "{{ user `build_id`}}",
+      "Status": "Baked"
+    }
+  }],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": ["sudo mkdir -p /etc/chef",
+        "sudo chmod -R 777 /etc/chef",
+        "mkdir -p /tmp/packer-chef-client/",
+        "chmod 0755 /tmp/packer-chef-client"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "{{pwd}}/cookbooks",
+      "destination": "/etc/chef"
+    },
+    {
+      "type": "file",
+      "source": "{{pwd}}/data_bags",
+      "destination": "/etc/chef"
+    },
+    {
+      "type": "file",
+      "source": "{{pwd}}/environments",
+      "destination": "/etc/chef"
+    },
+    {
+      "type": "file",
+      "source": "{{pwd}}/encrypted_data_bag_secret",
+      "destination": "/etc/chef"
+    },
+    {
+      "type": "shell",
+      "inline": ["find /etc/chef"]
+    },
+    {
+      "type": "chef-client",
+      "execute_command": "cd /etc/chef && sudo chef-client --local-mode --no-color -c /tmp/packer-chef-client/client.rb -j /tmp/packer-chef-client/first-boot.json --log_level error",
+      "prevent_sudo": false,
+      "skip_install": false,
+      "skip_clean_node": true,
+      "skip_clean_client": true,
+      "server_url": "http://localhost:8889",
+      "ssl_verify_mode": "verify_none",
+      "node_name": "{{user `client`}}-packer-{{user `ami_name`}}-{{uuid}}",
+      "run_list": [ "{{user `chef_run_list`}}" ],
+      "json": {
+        "{{user `client`}}": {
+          "app_build_no": "{{user `build_no`}}",
+          "app_build_sha": "{{user `build_sha`}}"
+        }
+      }
+    }
+  ],
+  "variables": {
+    "access_key": "",
+    "secret_key": "",
+    "source_ami": "",
+    "ami_name":"",
+    "vpc_id": "",
+    "subnet_id": "" ,
+    "security_group": "" ,
+    "region": "",
+    "build_no": "",
+    "build_id": "",
+    "build_sha": "",
+    "chef_run_list":"",
+    "ami_regions":"",
+    "ami_users":"",
+    "packer_role":"packer",
+    "packer_instance_profile":"packer",
+    "instance_type":"m3.medium"
+  }
+}
