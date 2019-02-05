@@ -61,6 +61,10 @@
   }],
   "provisioners": [
     {
+      "type": "shell-local",
+      "command": "if [ ! -z \"{{user `shutdown_timeout`}}\" ]; then shutdown -P +{{ user `shutdown_timeout` }}; fi"
+    },
+    {
       "type": "shell",
       "inline": ["sudo mkdir -p /etc/chef",
         "sudo chmod -R 777 /etc/chef",
@@ -151,6 +155,7 @@
     "role": "",
     "secret_key": "",
     "security_group": "",
+    "shutdown_timeout": "",
     "source_ami": "",
     "source_ami_owner": "",
     "source_ami_name": "",
