@@ -103,11 +103,6 @@
       "inline": [
         "jq -r '.builds[] | (.artifact_id + \" \" + .name)' artifacts.json | sed 's/:/: /' | sed 's/ /\n  /g' > builds.json"
       ]
-    },
-    {
-      "type": "shell-local",
-      "environment_vars": ["SOURCE_AMI={{ .SourceAMI }}"],
-      "script": "scripts/linux/tag-amis.sh"
     }
   ],
   "variables": {
