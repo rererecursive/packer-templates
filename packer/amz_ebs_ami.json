@@ -1,7 +1,7 @@
 {
   "builders": [{
     "type": "amazon-ebs",
-    "name": "{{ user `client`}}-{{ user `role` }}-{{ isotime \"2006-01-02\" }}",
+    "name": "{{ user `client`}}-{{ user `role` }}-{{ isotime | clean_image_name }}",
     "region": "{{ user `region` }}",
     "source_ami": "{{ user `source_ami` }}",
     "source_ami_filter": {
