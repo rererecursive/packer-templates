@@ -33,7 +33,6 @@
       "BuildNumber": "{{ user `build_no`}}",
       "ChefRepoCommit": "{{ user `chef_repo_commit`  }}",
       "ChefRepoBranch": "{{ user `chef_repo_branch` }}",
-      "PackerTemplateName": "{{ user `packer_template` }}",
       "Status": "Baking"
     },
     "tags": {
@@ -43,7 +42,6 @@
       "BuildNumber": "{{ user `build_no`}}",
       "ChefRepoCommit": "{{ user `chef_repo_commit`  }}",
       "ChefRepoBranch": "{{ user `chef_repo_branch` }}",
-      "PackerTemplateName": "{{ user `packer_template` }}",
       "Status": "Baked"
     },
     "ami_block_device_mappings": [ {
@@ -62,7 +60,7 @@
   "provisioners": [
     {
       "type": "shell-local",
-      "command": "if [ ! -z \"{{user `shutdown_timeout`}}\" ]; then shutdown -P +{{ user `shutdown_timeout` }}; fi"
+      "command": "if [ ! -z \"{{user `shutdown_timeout`}}\" ]; then /sbin/shutdown -P +{{ user `shutdown_timeout` }}; fi"
     },
     {
       "type": "shell",
@@ -121,7 +119,6 @@
     "instance_type": "m4.large",
     "packer_instance_profile":"packer",
     "packer_role":"packer",
-    "packer_template": "",
     "region": "",
     "role": "",
     "secret_key": "",
