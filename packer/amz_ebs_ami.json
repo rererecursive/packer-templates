@@ -1,7 +1,7 @@
 {
   "builders": [{
     "type": "amazon-ebs",
-    "name": "{{ user `client`}}-{{ user `role` }}-{{ isotime | clean_image_name }}",
+    "name": "{{ user `client`}}-{{ user `role` }}-{{ isotime \"2006-01-02t15-04-05z\" }}",
     "region": "{{ user `region` }}",
     "source_ami": "{{ user `source_ami` }}",
     "source_ami_filter": {
@@ -26,6 +26,7 @@
     "ssh_pty": true,
     "security_group_id": "{{ user `security_group` }}",
     "ssh_timeout":"{{ user `ssh_timeout`}}",
+    "user_data": "if [ ! -z \"{{user `shutdown_timeout`}}\" ]; then sudo shutdown -f -P +{{ user `shutdown_timeout` }}; fi",
     "run_tags": {
       "Name": "Packer {{ user `role` }}-{{ user `build_no` }} (Amazon Linux)",
       "SourceAMI": "{{ .SourceAMI  }}",
@@ -58,10 +59,6 @@
     } ]
   }],
   "provisioners": [
-    {
-      "type": "shell-local",
-      "command": "if [ ! -z \"{{user `shutdown_timeout`}}\" ]; then /sbin/shutdown -P +{{ user `shutdown_timeout` }}; fi"
-    },
     {
       "type": "shell",
       "inline": ["sudo mkdir -p /etc/chef",
